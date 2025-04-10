@@ -2,81 +2,61 @@ import { AiTwotoneEdit } from 'react-icons/ai';
 import { RiDeleteBin6Line } from 'react-icons/ri';
 import { Checkbox } from '../checkbox/Checkbox';
 import styles from './TodoItem.module.css';
-import PropTypes from 'prop-types';
 import { IoIosSave } from 'react-icons/io';
 import { MdCancelPresentation } from 'react-icons/md';
-import { requestChangeToDo } from '../../services/toDoChange';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AppContext } from '../../context';
 
 export const TodoItem = ({
 	id,
 	title,
 	completed,
-	deleteToDo,
-	changeToDo,
-	setChangeById,
-	changeById,
-	setItemTitle,
-	itemTitle,
 }) => {
-	const {setRefreshToDo, refreshToDo} = useContext(AppContext);
+	const {updateTodo, changinTaskID, setChangingTaskID, deleteTodo} = useContext(AppContext);
 
-	const saveTodoItem = () => {
-		requestChangeToDo(itemTitle, completed, id).then((response) => {
-			console.log('Задача изменена, ответ сервера: ', response);
-			setRefreshToDo(!refreshToDo);
-			setChangeById(0);
-		});
+	const [updatingTitle, setUpdatingTitle] = useState(title);
+
+	const handleSave = () => {
+		if (updatingTitle.length !== 0) {
+			updateTodo({title: updatingTitle, completed, id});
+			setChangingTaskID(null);
+		}
 	};
 
-	const cancel = () => {
-		setChangeById(0);
-		setItemTitle('');
-	};
+	const handleComleted = () => {
+		updateTodo({ id, title, completed: !completed });
+	}
 
 	return (
 		<>
-			{id !== changeById ? (
+			{id === changinTaskID ? (
+				<div className={styles['input-group']}>
+					<input
+						type="text"
+						value={updatingTitle}
+						onChange={({ target }) => setUpdatingTitle(target.value)}
+					/>
+					<button type="button" onClick={() => handleSave()}>
+						<IoIosSave />
+					</button>
+					<button type="button" onClick={() => setChangingTaskID(null)}>
+						<MdCancelPresentation />
+					</button>
+				</div>
+			) : (
 				<div className={styles.task}>
 					<span>
 						{title}
 					</span>
-					<Checkbox isChecked={completed} onChange={() => changeToDo(id)} />
-					<button type="button" onClick={() => {setChangeById(id); setItemTitle(title)}}>
+					<Checkbox isChecked={completed} onChange={handleComleted} />
+					<button type="button" onClick={() => setChangingTaskID(id)}>
 						<AiTwotoneEdit/>
 					</button>
-					<button className={styles.delete} onClick={() => deleteToDo(id)}>
+					<button className={styles.delete} onClick={() => deleteTodo(id)}>
 						<RiDeleteBin6Line />
-					</button>
-				</div>
-			) : (
-				<div className={styles['input-group']}>
-					<input
-						type="text"
-						value={itemTitle}
-						onChange={({ target }) => setItemTitle(target.value)}
-					/>
-					<button type="button" onClick={() => saveTodoItem()}>
-						<IoIosSave />
-					</button>
-					<button type="button" onClick={cancel}>
-						<MdCancelPresentation />
 					</button>
 				</div>
 			)}
 		</>
 	);
-};
-
-TodoItem.propTypes = {
-	id: PropTypes.number,
-	title: PropTypes.string,
-	completed: PropTypes.bool,
-	deleteToDo: PropTypes.func.isRequired,
-	changeToDo: PropTypes.func.isRequired,
-	setChangeById: PropTypes.func.isRequired,
-	changeById: PropTypes.bool,
-	setItemTitle: PropTypes.func.isRequired,
-	itemTitle: PropTypes.string,
 };

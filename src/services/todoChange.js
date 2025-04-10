@@ -1,10 +1,10 @@
-export const requestChangeToDo = (title, isCompleted, id) =>
-	fetch(`http://localhost:3005/toDo/${id}`, {
+export const requestChangeTodo = ({title, completed, id}) =>
+	fetch(`http://localhost:3005/todo/${id}`, {
 		method: 'PUT',
 		headers: { 'Content-Type': 'application/json;charset=utf-8' },
 		body: JSON.stringify({
-			title: title,
-			completed: isCompleted,
+			title,
+			completed,
 		}),
 	})
 		.then((rawResponse) => rawResponse.json())
